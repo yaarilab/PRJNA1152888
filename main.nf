@@ -2,7 +2,7 @@ $HOSTNAME = ""
 params.outdir = 'results'  
 
 evaluate(new File("${params.projectDir}/nextflow_header.config"))
-params.metadata.metadata = "${params.projectDir}/tools.json"
+//params.metadata.metadata = "${params.projectDir}/tools.json"
 if (!params.reads){params.reads = ""} 
 if (!params.mate){params.mate = ""} 
 
