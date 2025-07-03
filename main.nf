@@ -710,6 +710,8 @@ if(mate=="pair"){
 
 process collapse_sequences_collapse_seq {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_collapse-duplicate.fast.*$/) "collapse_duplicate/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_collapse-undetermined.fast.*$/) "collapse_undetermined/$filename"}
 input:
  set val(name), file(reads) from g15_11_reads0_g17_16
 
