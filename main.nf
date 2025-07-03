@@ -1060,16 +1060,40 @@ output:
  set name, file("tra/*.fasta")  into g_27_fastaFile00
  set name, file("trb/*.fasta")  into g_27_fastaFile11
 
-script:
-split_col = params.Split_TCR_chains.split_col
+"""
+mkdir -p tra
+mkdir -p trb
+
+awk '
+  BEGIN {OFS="\n"}
+  {
+    if(NR % 4 == 1) {
+      header = $0
+      split($0, b, "PRIMER=")
+      chain = "UNKNOWN"
+      if (length(b)>1) {
+        if (substr(b[2],1,3)=="TRB") {
+          chain="TRB"
+        } else if (substr(b[2],1,3)=="TRA") {
+          chain="TRA"
+        }
+      }
+      if (chain=="TRA") {
+        file="tra/output.fasta"
+      } else if (chain=="TRB") {
+        file="trb/output.fasta"
+      }
+      # Output as FASTA format
+      print ">"substr(header,2) > file
+      getline seq
+      print seq > file
+      getline plus
+      getline qual
+    }
+  }
+' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq
 
 """
-#!/bin/sh 
-mkdir tra
-mkdir trb
-awk '/^>/{f=""; split(\$0,b,"${split_col}="); if(substr(b[2],2,3)=="TRB"){f="trb/${name}.fasta"} else {if(substr(b[2],2,3)=="TRA"){f="tra/${name}.fasta"}} } ' ${reads}
-"""
-
 }
 
 
