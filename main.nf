@@ -1060,7 +1060,6 @@ output:
  set name, file("tra/*.fasta")  into g_27_fastaFile00
  set name, file("trb/*.fasta")  into g_27_fastaFile11
 
-"""
 
 mkdir -p tra
 mkdir -p trb
@@ -1095,12 +1094,14 @@ awk '
 ' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq
 
 
-name=$(awk -F'[.@]' '/^@/ {print $2; exit}' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq)
-mv "trb/reads.fasta" "trb/${name}.fasta" 
-mv "tra/reads.fasta" "tra/${name}.fasta" 
-
-
 """
+name=\$(awk -F'[.@]' '/^@/ {print \$2; exit}' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq)
+
+mv "trb/reads.fasta" "trb/\${name}.fasta"
+mv "tra/reads.fasta" "tra/\${name}.fasta"
+""" 
+
+
 }
 
 
