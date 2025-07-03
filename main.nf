@@ -790,11 +790,6 @@ nproc = params.Split_TCR_chains.nproc
 fasta = (fasta == "true") ? "zcat" : "cat"
 
 readArray = reads.toString().split(' ')
-#if(mate == "pair"){
-#    R1 = readArray.grep(~/.*R1.*/)[0]
-#} else {
-#    R1 = readArray[0]
-#}
 R1 = readArray[0]
 
 // Define output filenames
