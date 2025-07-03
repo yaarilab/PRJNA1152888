@@ -743,169 +743,6 @@ CollapseSeq.py -s ${reads} -n ${max_missing} ${fasta} ${inner} ${uf} ${cf} ${act
 }
 
 
-process split_sequences_split_seq {
-
-input:
- set val(name),file(reads) from g17_16_reads0_g18_20
-
-output:
- set val(name), file("*_atleast-*.fast*")  into g18_20_reads0_g_27, g18_20_reads0_g19_15
-
-script:
-field = params.split_sequences_split_seq.field
-num = params.split_sequences_split_seq.num
-fasta = params.split_sequences_split_seq.fasta
-
-readArray = reads.toString()
-
-if(num!=0){
-	num = " --num ${num}"
-}else{
-	num = ""
-}
-
-fasta = (fasta=="false") ? "" : "--fasta"
-
-"""
-SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
-"""
-
-}
-
-
-process Split_TCR_chains {
-
-input:
- set val(name), file(reads) from g18_20_reads0_g_27
-
-output:
- set val(name),  file("TRA.fastq")  into g_27_reads0_g_28
- set val(name),  file("TRB.fastq")  into g_27_reads1_g_29
- set val(name),  file("UNKNOWN.fastq")  into g_27_reads22
-
-script:
-nproc = params.Split_TCR_chains.nproc
-
-readArray = reads.toString().split(' ')
-R1 = readArray[0]
-
-// Define output filenames
-def out_TRA = "TRA.fastq"
-def out_TRB = "TRB.fastq"
-def out_UNKNOWN = "UNKNOWN.fastq"
-
-"""
-${fasta} ${R1} | awk '
-    BEGIN {
-        OFS="\\n";
-    }
-    {
-        if (NR % 4 == 1) {
-            header = \$0;
-            if (header ~ /PRIMER=TRA/) {
-                file = "${out_TRA}";
-            }
-            else if (header ~ /PRIMER=TRB/) {
-                file = "${out_TRB}";
-            }
-            else {
-                file = "${out_UNKNOWN}";
-            }
-            print header > file;
-            getline seq;
-            print seq > file;
-            getline plus;
-            print plus > file;
-            getline qual;
-            print qual > file;
-        }
-    }
-'
-"""
-
-
-}
-
-
-process vdjbase_input_trb {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
-input:
- set val(name),file(reads) from g_27_reads1_g_29
-
-output:
- file "${chain}"  into g_29_germlineDb00
-
-script:
-chain = params.vdjbase_input_trb.chain
-
-"""
-mkdir ${chain}
-mv ${reads} ${chain}/${name}.fasta
-"""
-
-}
-
-
-process vdjbase_input_tra {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
-input:
- set val(name),file(reads) from g_27_reads0_g_28
-
-output:
- file "${chain}"  into g_28_germlineDb00
-
-script:
-chain = params.vdjbase_input_tra.chain
-
-"""
-mkdir ${chain}
-mv ${reads} ${chain}/${name}.fasta
-"""
-
-}
-
-
-process Parse_header_table_parse_headers {
-
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*${out}$/) "parse_header_table/$filename"}
-input:
- set val(name), file(reads) from g18_20_reads0_g19_15
-
-output:
- set val(name),file("*${out}")  into g19_15_reads00
-
-script:
-method = params.Parse_header_table_parse_headers.method
-act = params.Parse_header_table_parse_headers.act
-args = params.Parse_header_table_parse_headers.args
-
-
-if(method=="collapse" || method=="copy" || method=="rename" || method=="merge"){
-	out="_reheader.fastq"
-	act = (act=="none") ? "" : "--act ${act}"
-	"""
-	ParseHeaders.py  ${method} -s ${reads} ${args} ${act}
-	"""
-}else{
-	if(method=="table"){
-			out=".tab"
-			"""
-			ParseHeaders.py ${method} -s ${reads} ${args}
-			"""	
-	}else{
-		out="_reheader.fastq"
-		"""
-		ParseHeaders.py ${method} -s ${reads} ${args}
-		"""		
-	}
-}
-
-
-}
-
-
 process Mask_Primer_align_parse_log_MP {
 
 publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*table.tab$/) "MP_align_log/$filename"}
@@ -1140,6 +977,99 @@ output:
 rmarkdown::render("${rmk}", clean=TRUE, output_format="html_document", output_dir=".")
 
 """
+}
+
+
+process split_sequences_split_seq {
+
+input:
+ set val(name),file(reads) from g17_16_reads0_g18_20
+
+output:
+ set val(name), file("*_atleast-*.fast*")  into g18_20_reads0_g_27, g18_20_reads0_g19_15
+
+script:
+field = params.split_sequences_split_seq.field
+num = params.split_sequences_split_seq.num
+fasta = params.split_sequences_split_seq.fasta
+
+readArray = reads.toString()
+
+if(num!=0){
+	num = " --num ${num}"
+}else{
+	num = ""
+}
+
+fasta = (fasta=="false") ? "" : "--fasta"
+
+"""
+SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
+"""
+
+}
+
+
+process Parse_header_table_parse_headers {
+
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*${out}$/) "parse_header_table/$filename"}
+input:
+ set val(name), file(reads) from g18_20_reads0_g19_15
+
+output:
+ set val(name),file("*${out}")  into g19_15_reads00
+
+script:
+method = params.Parse_header_table_parse_headers.method
+act = params.Parse_header_table_parse_headers.act
+args = params.Parse_header_table_parse_headers.args
+
+
+if(method=="collapse" || method=="copy" || method=="rename" || method=="merge"){
+	out="_reheader.fastq"
+	act = (act=="none") ? "" : "--act ${act}"
+	"""
+	ParseHeaders.py  ${method} -s ${reads} ${args} ${act}
+	"""
+}else{
+	if(method=="table"){
+			out=".tab"
+			"""
+			ParseHeaders.py ${method} -s ${reads} ${args}
+			"""	
+	}else{
+		out="_reheader.fastq"
+		"""
+		ParseHeaders.py ${method} -s ${reads} ${args}
+		"""		
+	}
+}
+
+
+}
+
+
+process Split_TCR_chains {
+
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /tra\/.*.fasta$/) "reads/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /trb\/.*.fasta$/) "reads/$filename"}
+input:
+ set val(name), file(reads) from g18_20_reads0_g_27
+
+output:
+ set name, file("tra/*.fasta")  into g_27_fastaFile00
+ set name, file("trb/*.fasta")  into g_27_fastaFile11
+
+script:
+split_col = params.Split_TCR_chains.split_col
+
+"""
+#!/bin/sh 
+mkdir tra
+mkdir trb
+awk '/^>/{f=""; split(\$0,b,"${split_col}="); if(substr(b[2],2,3)=="TRB"){f="trb/${name}.fasta"} else {if(substr(b[2],2,3)=="TRA"){f="tra/${name}.fasta"} ' ${reads}
+"""
+
 }
 
 
