@@ -779,23 +779,20 @@ input:
  set val(name), file(reads) from g18_20_reads0_g_27
 
 output:
- set val(name),  file("*_TRA.fastq")  into g_27_reads0_g_28
- set val(name),  file("*_TRB.fastq")  into g_27_reads1_g_29
- set val(name),  file("*_UNKNOWN.fastq")  into g_27_reads22
+ set val(name),  file("TRA.fastq")  into g_27_reads0_g_28
+ set val(name),  file("TRB.fastq")  into g_27_reads1_g_29
+ set val(name),  file("UNKNOWN.fastq")  into g_27_reads22
 
 script:
-fasta = params.Split_TCR_chains.fasta
 nproc = params.Split_TCR_chains.nproc
-
-fasta = (fasta == "true") ? "zcat" : "cat"
 
 readArray = reads.toString().split(' ')
 R1 = readArray[0]
 
 // Define output filenames
-def out_TRA = "${R1}_TRA.fastq"
-def out_TRB = "${R1}_TRB.fastq"
-def out_UNKNOWN = "${R1}_UNKNOWN.fastq"
+def out_TRA = "TRA.fastq"
+def out_TRB = "TRB.fastq"
+def out_UNKNOWN = "UNKNOWN.fastq"
 
 """
 ${fasta} ${R1} | awk '
