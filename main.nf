@@ -1064,10 +1064,8 @@ output:
 mkdir -p tra
 mkdir -p trb
 
-parents_dir=$(basename $(dirname "$input"))
-awk -v prefix="$parents_dir" '
-
-awk '
+parents_dir=\$(basename \$(dirname "${input}"))
+awk -v prefix="\$parents_dir" '
   BEGIN {OFS="\\n"}
   {
     if(NR % 4 == 1) {
