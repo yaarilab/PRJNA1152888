@@ -1064,6 +1064,9 @@ output:
 mkdir -p tra
 mkdir -p trb
 
+parents_dir=$(basename $(dirname "$input"))
+awk -v prefix="$parents_dir" '
+
 awk '
   BEGIN {OFS="\\n"}
   {
@@ -1079,9 +1082,9 @@ awk '
         }
       }
       if (chain=="TRA") {
-        file="tra/output.fasta"
+      	file = "tra/" prefix ".fasta"
       } else if (chain=="TRB") {
-        file="trb/output.fasta"
+        file = "trb/" prefix ".fasta"
       }
       # Output as FASTA format
       print ">"substr(header,2) > file
