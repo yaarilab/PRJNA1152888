@@ -710,8 +710,6 @@ if(mate=="pair"){
 
 process collapse_sequences_collapse_seq {
 
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_collapse-duplicate.fast.*$/) "collapse_duplicate/$filename"}
-publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*_collapse-undetermined.fast.*$/) "collapse_undetermined/$filename"}
 input:
  set val(name), file(reads) from g15_11_reads0_g17_16
 
@@ -751,7 +749,7 @@ input:
  set val(name),file(reads) from g17_16_reads0_g18_20
 
 output:
- set val(name), file("*_atleast-*.fast*")  into g18_20_reads0_g19_15
+ set val(name), file("*_atleast-*.fast*")  into g18_20_reads0_g_27, g18_20_reads0_g19_15
 
 script:
 field = params.split_sequences_split_seq.field
@@ -770,6 +768,108 @@ fasta = (fasta=="false") ? "" : "--fasta"
 
 """
 SplitSeq.py group -s ${readArray} -f ${field} ${num} ${fasta}
+"""
+
+}
+
+
+process Split_TCR_chains {
+
+input:
+ set val(name), file(reads) from g18_20_reads0_g_27
+
+output:
+ set val(name),  file("*_TRA.fastq")  into g_27_reads0_g_28
+ set val(name),  file("*_TRB.fastq")  into g_27_reads1_g_29
+ set val(name),  file("*_UNKNOWN.fastq")  into g_27_reads22
+
+script:
+fasta = params.Split_TCR_chains.fasta
+nproc = params.Split_TCR_chains.nproc
+
+fasta = (fasta == "true") ? "zcat" : "cat"
+
+readArray = reads.toString().split(' ')
+#if(mate == "pair"){
+#    R1 = readArray.grep(~/.*R1.*/)[0]
+#} else {
+#    R1 = readArray[0]
+#}
+R1 = readArray[0]
+
+// Define output filenames
+def out_TRA = "${R1}_TRA.fastq"
+def out_TRB = "${R1}_TRB.fastq"
+def out_UNKNOWN = "${R1}_UNKNOWN.fastq"
+
+"""
+${fasta} ${R1} | awk '
+    BEGIN {
+        OFS="\\n";
+    }
+    {
+        if (NR % 4 == 1) {
+            header = \$0;
+            if (header ~ /PRIMER=TRA/) {
+                file = "${out_TRA}";
+            }
+            else if (header ~ /PRIMER=TRB/) {
+                file = "${out_TRB}";
+            }
+            else {
+                file = "${out_UNKNOWN}";
+            }
+            print header > file;
+            getline seq;
+            print seq > file;
+            getline plus;
+            print plus > file;
+            getline qual;
+            print qual > file;
+        }
+    }
+'
+"""
+
+
+}
+
+
+process vdjbase_input_trb {
+
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
+input:
+ set val(name),file(reads) from g_27_reads1_g_29
+
+output:
+ file "${chain}"  into g_29_germlineDb00
+
+script:
+chain = params.vdjbase_input_trb.chain
+
+"""
+mkdir ${chain}
+mv ${reads} ${chain}/${name}.fasta
+"""
+
+}
+
+
+process vdjbase_input_tra {
+
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${chain}$/) "reads/$filename"}
+input:
+ set val(name),file(reads) from g_27_reads0_g_28
+
+output:
+ file "${chain}"  into g_28_germlineDb00
+
+script:
+chain = params.vdjbase_input_tra.chain
+
+"""
+mkdir ${chain}
+mv ${reads} ${chain}/${name}.fasta
 """
 
 }
