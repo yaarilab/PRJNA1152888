@@ -1065,10 +1065,10 @@ mkdir -p tra
 mkdir -p trb
 
 awk '
-  BEGIN {OFS="\n"}
+  BEGIN {OFS="\\n"}
   {
     if(NR % 4 == 1) {
-      header = $0
+      header = \$0
       split($0, b, "PRIMER=")
       chain = "UNKNOWN"
       if (length(b)>1) {
