@@ -1095,6 +1095,11 @@ awk '
 ' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq
 
 
+name=$(awk -F'[.@]' '/^@/ {print $2; exit}' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq)
+mv "trb/reads.fasta" "trb/${name}.fasta" 
+mv "tra/reads.fasta" "tra/${name}.fasta" 
+
+
 """
 }
 
