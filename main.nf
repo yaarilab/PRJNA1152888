@@ -1067,7 +1067,7 @@ split_col = params.Split_TCR_chains.split_col
 #!/bin/sh 
 mkdir tra
 mkdir trb
-awk '/^>/{f=""; split(\$0,b,"${split_col}="); if(substr(b[2],2,3)=="TRB"){f="trb/${name}.fasta"} else {if(substr(b[2],2,3)=="TRA"){f="tra/${name}.fasta"} ' ${reads}
+awk '/^>/{f=""; split(\$0,b,"${split_col}="); if(substr(b[2],2,3)=="TRB"){f="trb/${name}.fasta"} else {if(substr(b[2],2,3)=="TRA"){f="tra/${name}.fasta"}} } ' ${reads}
 """
 
 }
