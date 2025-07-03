@@ -1060,12 +1060,11 @@ output:
  set name, file("tra/*.fasta")  into g_27_fastaFile00
  set name, file("trb/*.fasta")  into g_27_fastaFile11
 
-"""
+
 mkdir -p tra
 mkdir -p trb
 
-parents_dir=\$(basename \$(dirname "${input}"))
-awk -v prefix="\$parents_dir" '
+awk '
   BEGIN {OFS="\\n"}
   {
     if(NR % 4 == 1) {
@@ -1080,9 +1079,9 @@ awk -v prefix="\$parents_dir" '
         }
       }
       if (chain=="TRA") {
-      	file = "tra/" prefix ".fasta"
+      	file = "tra/reads.fasta"
       } else if (chain=="TRB") {
-        file = "trb/" prefix ".fasta"
+        file = "trb/reads.fasta"
       }
       # Output as FASTA format
       print ">"substr(header,2) > file
@@ -1095,6 +1094,10 @@ awk -v prefix="\$parents_dir" '
 ' R1_assemble-pass_quality-pass_primers-pass_collapse-unique_atleast-1.fastq
 
 """
+mv trb/reads.fasta trb/${name}.fasta
+mv tra/reads.fasta tra/${name}.fasta
+"""
+
 }
 
 
